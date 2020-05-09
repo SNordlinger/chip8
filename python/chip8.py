@@ -23,20 +23,31 @@ chip8_fontset = ([
 class Chip8: # pylint: disable=too-many-instance-attributes
     def __init__(self):
         self.opcode = 0
-        self.v_registers = bytearray(16)
-
-        self.i = 0
         self.program_counter = 0x200
-
-        self.gfx = [0] * (64 * 32)
-
-        self.delay_timer = 0
-        self.sound_timer = 0
 
         self.stack = []
 
+        # Chip 8 has 15 8-bit registers: V0-VE
+        # 16th register is carry flag
+        self.v_registers = bytearray(16)
+
+        # Index register
+        self.i = 0
+
+        # Graphics memory
+        self.gfx = [0] * (64 * 32)
+
+        # Timer registers should count at 60hz
+        self.delay_timer = 0
+        self.sound_timer = 0
+
+        # State of hex-based keypad
         self.key = [0] * 16
 
+        # Chip 8 has 4K memory
+        # 0x000-0x1FF - Chip 8 interpreter (contains font set in emu)
+        # 0x050-0x0A0 - Used for the built in 4x5 pixel font set (0-F)
+        # 0x200-0xFFF - Program ROM and work RAM
         self.memory = bytearray(4056)
         self.memory[0:80] = chip8_fontset
 
@@ -65,7 +76,8 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.delay_timer -= 1
 
         if self.sound_timer > 0:
-            print('BEEP\n')
+            if self.sound_timer == 1:
+                print('BEEP\n')
             self.sound_timer -= 1
 
     def load_game(self, game_file):
@@ -74,6 +86,10 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         self.memory[512:512 + data_len] = game_data
 
     def handle_0xxx_opcode(self):
+        """
+        00E0: Clears the screen
+        00EE: Returns from a subroutine
+        """
         if self.opcode & 0x000F == 0:
             self.gfx = [0] * (64 * 32)
         else:
@@ -81,13 +97,22 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         self.program_counter += 2
 
     def handle_1xxx_opcode(self):
+        """
+        1NNN: Jump to address NNN
+        """
         self.program_counter = self.opcode & 0x0FFF
 
     def handle_2xxx_opcode(self):
+        """
+        2NNN: Call subroutine as NNN
+        """
         self.stack.append(self.program_counter)
         self.program_counter = self.opcode & 0x0FFF
 
     def handle_3xxx_opcode(self):
+        """
+        3XNN: Skips next instruction if VX == NN
+        """
         reg = (self.opcode & 0x0F00) >> 8
         value = self.opcode & 0x00FF
         if self.v_registers[reg] == value:
@@ -96,6 +121,9 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.program_counter += 2
 
     def handle_4xxx_opcode(self):
+        """
+        4XNN: Skips next instruction if VX != NN
+        """
         reg = (self.opcode & 0x0F00) >> 8
         value = self.opcode & 0x00FF
         if self.v_registers[reg] != value:
@@ -104,6 +132,9 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.program_counter += 2
 
     def handle_5xxx_opcode(self):
+        """
+        5XY0: Skips next instruction if VX == VY
+        """
         reg1 = (self.opcode & 0x0f00) >> 8
         reg2 = (self.opcode & 0x00f0) >> 4
 
@@ -113,18 +144,31 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.program_counter += 2
 
     def handle_6xxx_opcode(self):
+        """
+        6XNN: Sets VX to NN
+        """
         reg = (self.opcode & 0x0F00) >> 8
         value = self.opcode & 0x00FF
         self.v_registers[reg] = value
         self.program_counter += 2
 
     def handle_7xxx_opcode(self):
+        """
+        7XNN: Adds NN to VX
+        """
         reg = (self.opcode & 0x0F00) >> 8
         value = self.opcode & 0x00FF
         self.v_registers[reg] = (self.v_registers[reg] + value) % 256
         self.program_counter += 2
 
     def handle_8xxx_opcode(self):
+        """
+        8XY0 - 8XYE
+        
+        Each of the many 8xxx opcodes sets the VX register
+        (and sometimes the carry flag) based on the state
+        of the VX and VY registers
+        """
         x_reg = (self.opcode & 0x0F00) >> 8
         y_reg = (self.opcode & 0x00F0) >> 4
 
@@ -138,6 +182,9 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         self.v_registers[0xF] = new_carry
 
     def handle_9xxx_opcode(self):
+        """
+        9XY0: Skips next instruction if VX != VY
+        """
         reg1 = (self.opcode & 0x0f00) >> 8
         reg2 = (self.opcode & 0x00f0) >> 4
 
@@ -147,5 +194,8 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.program_counter += 2
 
     def handle_axxx_opcode(self):
+        """
+        ANNN: Sets the index register to NNN
+        """
         self.i = self.opcode & 0x0FFF
         self.program_counter += 2
