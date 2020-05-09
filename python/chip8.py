@@ -1,4 +1,5 @@
 import opcode_8xxx_operations
+import random
 
 chip8_fontset = ([
     0xF0, 0x90, 0x90, 0x90, 0xF0, # 0
@@ -63,7 +64,8 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.handle_8xxx_opcode,
             self.handle_9xxx_opcode,
             self.handle_axxx_opcode,
-            self.handle_bxxx_opcode
+            self.handle_bxxx_opcode,
+            self.handle_cxxx_opcode
         ]
 
     def emulate_cycle(self):
@@ -207,3 +209,12 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         """
         offset = self.opcode & 0x0FFF
         self.program_counter = self.v_registers[0] + offset
+
+    def handle_cxxx_opcode(self):
+        """
+        CXNN: Sets VX to the bitwise and NNN and a random number
+        """
+        reg = (self.opcode & 0x0F00) >> 8
+        val = self.opcode & 0x00FF
+
+        self.v_registers[reg] = val & random.randint(0, 255)

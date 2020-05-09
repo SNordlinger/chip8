@@ -2,6 +2,7 @@
 
 from io import BytesIO
 from chip8 import Chip8
+import random
 
 
 class TestOpcode1XXX:
@@ -302,3 +303,13 @@ class TestOpcodeBXXX:
         chip.emulate_cycle()
 
         assert chip.program_counter == 0x112
+
+class TestOpcodeCXXX:
+    def test_set_random(self):
+        chip = Chip8()
+        program = BytesIO(b'\xC1\x0D')
+        random.seed(2)
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.v_registers[1] == 0xC
