@@ -291,3 +291,14 @@ class TestOpcodeAXXX:
         chip.emulate_cycle()
 
         assert chip.i == 1
+
+
+class TestOpcodeBXXX:
+    def test_jump_w_offset(self):
+        chip = Chip8()
+        program = BytesIO(b'\xB1\x11')
+        chip.v_registers[0] = 1
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.program_counter == 0x112

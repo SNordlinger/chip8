@@ -62,7 +62,8 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.handle_7xxx_opcode,
             self.handle_8xxx_opcode,
             self.handle_9xxx_opcode,
-            self.handle_axxx_opcode
+            self.handle_axxx_opcode,
+            self.handle_bxxx_opcode
         ]
 
     def emulate_cycle(self):
@@ -199,3 +200,10 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         """
         self.i = self.opcode & 0x0FFF
         self.program_counter += 2
+
+    def handle_bxxx_opcode(self):
+        """
+        BNNN: Jumps to the address NNN + V0
+        """
+        offset = self.opcode & 0x0FFF
+        self.program_counter = self.v_registers[0] + offset
