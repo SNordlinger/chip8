@@ -43,7 +43,7 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         self.sound_timer = 0
 
         # State of hex-based keypad
-        self.key = [0] * 16
+        self.keys = [False] * 16
 
         # Chip 8 has 4K memory
         # 0x000-0x1FF - Chip 8 interpreter (contains font set in emu)
@@ -66,7 +66,8 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.handle_axxx_opcode,
             self.handle_bxxx_opcode,
             self.handle_cxxx_opcode,
-            self.handle_dxxx_opcode
+            self.handle_dxxx_opcode,
+            self.handle_exxx_opcode
         ]
 
     def emulate_cycle(self):
@@ -241,3 +242,20 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             if new_gfx != sprite_line | current_gfx:
                 self.v_registers[15] = 1
             self.gfx[gfx_loc] = new_gfx
+        self.program_counter += 2
+
+    def handle_exxx_opcode(self):
+        """
+        EX9E: Skips next instruction if the key stored in VX is pressed
+        EXA1: Skips next instruction if the key stored in VX is not pressed
+        """
+        opcode_end = (self.opcode & 0x00FF)
+        register = (self.opcode & 0x0F00) >> 8
+        key_num = self.v_registers[register]
+        is_pressed = self.keys[key_num]
+
+        if ((opcode_end == 0x9E and is_pressed)
+                or (opcode_end == 0xA1 and not is_pressed)):
+            self.program_counter += 4
+        else:
+            self.program_counter += 2

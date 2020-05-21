@@ -1,8 +1,8 @@
 # pylint: disable=no-self-use,too-few-public-methods
 
+import random
 from io import BytesIO
 from chip8 import Chip8
-import random
 
 
 class TestOpcode1XXX:
@@ -317,7 +317,7 @@ class TestOpcodeCXXX:
 class TestOpcodeDXXX:
     def test_display_sprite(self):
         chip = Chip8()
-        program = BytesIO(b'\xD2\x33')
+        program = BytesIO(b'\xD2\x33\xD2\x31')
         chip.i = 80
         chip.memory[80:83] = b'\x3C\xC3\xFF'
         chip.load_game(program)
@@ -335,10 +335,44 @@ class TestOpcodeDXXX:
         assert chip.v_registers[15] == 0
 
         chip.memory[84] = 0x3C
-        chip.load_game(program)
         chip.emulate_cycle()
 
         gfx_line1 = chip.gfx[expected_x + expected_y * 8]
 
         assert gfx_line1 == 0x00
         assert chip.v_registers[15] == 1
+
+class TestOpcodeEXXX:
+    def test_jump_when_key_pressed(self):
+        chip = Chip8()
+        program = BytesIO(b'\xE2\x9E\xE2\x9E')
+        chip.v_registers[2] = 5
+        chip.keys[5] = False
+        orig_pc = chip.program_counter
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.program_counter == orig_pc + 2
+
+        chip.keys[5] = True
+        orig_pc = chip.program_counter
+        chip.emulate_cycle()
+
+        assert chip.program_counter == orig_pc + 4
+
+    def test_jump_when_key_not_pressed(self):
+        chip = Chip8()
+        program = BytesIO(b'\xE2\xA1\xE2\xA1')
+        chip.v_registers[2] = 5
+        chip.keys[5] = True
+        orig_pc = chip.program_counter
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.program_counter == orig_pc + 2
+
+        chip.keys[5] = False
+        orig_pc = chip.program_counter
+        chip.emulate_cycle()
+
+        assert chip.program_counter == orig_pc + 4
