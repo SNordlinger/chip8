@@ -313,3 +313,32 @@ class TestOpcodeCXXX:
         chip.emulate_cycle()
 
         assert chip.v_registers[1] == 0xC
+
+class TestOpcodeDXXX:
+    def test_display_sprite(self):
+        chip = Chip8()
+        program = BytesIO(b'\xD2\x33')
+        chip.i = 80
+        chip.memory[80:83] = b'\x3C\xC3\xFF'
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        expected_x = 2
+        expected_y = 3
+        gfx_line1 = chip.gfx[expected_x + expected_y * 8]
+        gfx_line2 = chip.gfx[expected_x + (expected_y + 1) * 8]
+        gfx_line3 = chip.gfx[expected_x + (expected_y + 2) * 8]
+
+        assert gfx_line1 == 0x3C
+        assert gfx_line2 == 0xC3
+        assert gfx_line3 == 0xFF
+        assert chip.v_registers[15] == 0
+
+        chip.memory[84] = 0x3C
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        gfx_line1 = chip.gfx[expected_x + expected_y * 8]
+
+        assert gfx_line1 == 0x00
+        assert chip.v_registers[15] == 1

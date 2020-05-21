@@ -1,5 +1,5 @@
-import opcode_8xxx_operations
 import random
+import opcode_8xxx_operations
 
 chip8_fontset = ([
     0xF0, 0x90, 0x90, 0x90, 0xF0, # 0
@@ -36,7 +36,7 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         self.i = 0
 
         # Graphics memory
-        self.gfx = [0] * (64 * 32)
+        self.gfx = bytearray(64 * 32)
 
         # Timer registers should count at 60hz
         self.delay_timer = 0
@@ -65,7 +65,8 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.handle_9xxx_opcode,
             self.handle_axxx_opcode,
             self.handle_bxxx_opcode,
-            self.handle_cxxx_opcode
+            self.handle_cxxx_opcode,
+            self.handle_dxxx_opcode
         ]
 
     def emulate_cycle(self):
@@ -167,7 +168,7 @@ class Chip8: # pylint: disable=too-many-instance-attributes
     def handle_8xxx_opcode(self):
         """
         8XY0 - 8XYE
-        
+
         Each of the many 8xxx opcodes sets the VX register
         (and sometimes the carry flag) based on the state
         of the VX and VY registers
@@ -218,3 +219,25 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         val = self.opcode & 0x00FF
 
         self.v_registers[reg] = val & random.randint(0, 255)
+
+    def handle_dxxx_opcode(self):
+        """
+        DXYN: Draws sprites on the screen
+
+        Draws a sprite of size 8xN at the coordinates read from the
+        VX and VY registers
+        """
+        x_coord = (self.opcode & 0x0F00) >> 8
+        y_coord = (self.opcode & 0x00F0) >> 4
+        height = self.opcode & 0x000F
+
+        self.v_registers[15] = 0
+
+        for line_num in range(height):
+            gfx_loc = x_coord + (y_coord + line_num) * 8
+            sprite_line = self.memory[self.i + line_num]
+            current_gfx = self.gfx[gfx_loc]
+            new_gfx = sprite_line ^ current_gfx
+            if new_gfx != sprite_line | current_gfx:
+                self.v_registers[15] = 1
+            self.gfx[gfx_loc] = new_gfx
