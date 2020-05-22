@@ -21,6 +21,20 @@ chip8_fontset = ([
 ])
 
 
+class Keypad():
+    def __init__(self):
+        self.__key_state = [False] * 16
+
+    def press_key(self, key_num):
+        self.__key_state[key_num] = True
+
+    def release_key(self, key_num):
+        self.__key_state[key_num] = False
+
+    def is_pressed(self, key_num):
+        return self.__key_state[key_num]
+
+
 class Chip8: # pylint: disable=too-many-instance-attributes
     def __init__(self):
         self.opcode = 0
@@ -43,7 +57,7 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         self.sound_timer = 0
 
         # State of hex-based keypad
-        self.keys = [False] * 16
+        self.keys = Keypad()
 
         # Chip 8 has 4K memory
         # 0x000-0x1FF - Chip 8 interpreter (contains font set in emu)
@@ -252,7 +266,7 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         opcode_end = (self.opcode & 0x00FF)
         register = (self.opcode & 0x0F00) >> 8
         key_num = self.v_registers[register]
-        is_pressed = self.keys[key_num]
+        is_pressed = self.keys.is_pressed(key_num)
 
         if ((opcode_end == 0x9E and is_pressed)
                 or (opcode_end == 0xA1 and not is_pressed)):

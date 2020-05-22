@@ -347,14 +347,14 @@ class TestOpcodeEXXX:
         chip = Chip8()
         program = BytesIO(b'\xE2\x9E\xE2\x9E')
         chip.v_registers[2] = 5
-        chip.keys[5] = False
+        chip.keys.release_key(5)
         orig_pc = chip.program_counter
         chip.load_game(program)
         chip.emulate_cycle()
 
         assert chip.program_counter == orig_pc + 2
 
-        chip.keys[5] = True
+        chip.keys.press_key(5)
         orig_pc = chip.program_counter
         chip.emulate_cycle()
 
@@ -364,14 +364,14 @@ class TestOpcodeEXXX:
         chip = Chip8()
         program = BytesIO(b'\xE2\xA1\xE2\xA1')
         chip.v_registers[2] = 5
-        chip.keys[5] = True
+        chip.keys.press_key(5)
         orig_pc = chip.program_counter
         chip.load_game(program)
         chip.emulate_cycle()
 
         assert chip.program_counter == orig_pc + 2
 
-        chip.keys[5] = False
+        chip.keys.release_key(5)
         orig_pc = chip.program_counter
         chip.emulate_cycle()
 
