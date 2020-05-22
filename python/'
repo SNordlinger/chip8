@@ -304,7 +304,6 @@ class TestOpcodeBXXX:
 
         assert chip.program_counter == 0x112
 
-
 class TestOpcodeCXXX:
     def test_set_random(self):
         chip = Chip8()
@@ -315,34 +314,33 @@ class TestOpcodeCXXX:
 
         assert chip.v_registers[1] == 0xC
 
-
 class TestOpcodeDXXX:
     def test_display_sprite(self):
         chip = Chip8()
         program = BytesIO(b'\xD2\x33\xD2\x31')
         chip.i = 80
-        chip.memory.set(80, b'\x3C\xC3\xFF')
+        chip.memory[80:83] = b'\x3C\xC3\xFF'
         chip.load_game(program)
         chip.emulate_cycle()
 
-        gfx_line1 = chip.graphics.get_gfx_state(2, 3, 8)
-        gfx_line2 = chip.graphics.get_gfx_state(2, 4, 8)
-        gfx_line3 = chip.graphics.get_gfx_state(2, 5, 8)
+        expected_x = 2
+        expected_y = 3
+        gfx_line1 = chip.gfx[expected_x + expected_y * 8]
+        gfx_line2 = chip.gfx[expected_x + (expected_y + 1) * 8]
+        gfx_line3 = chip.gfx[expected_x + (expected_y + 2) * 8]
 
-        assert gfx_line1 == [0, 0, 1, 1, 1, 1, 0, 0]
-        assert gfx_line2 == [1, 1, 0, 0, 0, 0, 1, 1]
-        assert gfx_line3 == [1, 1, 1, 1, 1, 1, 1, 1]
+        assert gfx_line1 == 0x3C
+        assert gfx_line2 == 0xC3
+        assert gfx_line3 == 0xFF
         assert chip.v_registers[15] == 0
 
-        chip.memory.set_byte(84, 0x24)
-        chip.i = 84
+        chip.memory[84] = 0x3C
         chip.emulate_cycle()
 
-        gfx_line1 = chip.graphics.get_gfx_state(2, 3, 8)
+        gfx_line1 = chip.gfx[expected_x + expected_y * 8]
 
-        assert gfx_line1 == [0, 0, 0, 1, 1, 0, 0, 0]
+        assert gfx_line1 == 0x00
         assert chip.v_registers[15] == 1
-
 
 class TestOpcodeEXXX:
     def test_jump_when_key_pressed(self):
@@ -356,7 +354,7 @@ class TestOpcodeEXXX:
 
         assert chip.program_counter == orig_pc + 2
 
-        chip.keys.press_key(5)
+        chip.keys[5] = True
         orig_pc = chip.program_counter
         chip.emulate_cycle()
 
@@ -366,14 +364,14 @@ class TestOpcodeEXXX:
         chip = Chip8()
         program = BytesIO(b'\xE2\xA1\xE2\xA1')
         chip.v_registers[2] = 5
-        chip.keys.press_key(5)
+        chip.keys[5] = True
         orig_pc = chip.program_counter
         chip.load_game(program)
         chip.emulate_cycle()
 
         assert chip.program_counter == orig_pc + 2
 
-        chip.keys.release_key(5)
+        chip.keys[5] = False
         orig_pc = chip.program_counter
         chip.emulate_cycle()
 

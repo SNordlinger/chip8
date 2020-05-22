@@ -1,27 +1,9 @@
 import random
+from memory import Memory
 import opcode_8xxx_operations
 
-chip8_fontset = ([
-    0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
-    0x20, 0x60, 0x20, 0x20, 0x70,  # 1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0,  # 2
-    0xF0, 0x10, 0xF0, 0x10, 0xF0,  # 3
-    0x90, 0x90, 0xF0, 0x10, 0x10,  # 4
-    0xF0, 0x80, 0xF0, 0x10, 0xF0,  # 5
-    0xF0, 0x80, 0xF0, 0x90, 0xF0,  # 6
-    0xF0, 0x10, 0x20, 0x40, 0x40,  # 7
-    0xF0, 0x90, 0xF0, 0x90, 0xF0,  # 8
-    0xF0, 0x90, 0xF0, 0x10, 0xF0,  # 9
-    0xF0, 0x90, 0xF0, 0x90, 0x90,  # A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0,  # B
-    0xF0, 0x80, 0x80, 0x80, 0xF0,  # C
-    0xE0, 0x90, 0x90, 0x90, 0xE0,  # D
-    0xF0, 0x80, 0xF0, 0x80, 0xF0,  # E
-    0xF0, 0x80, 0xF0, 0x80, 0x80   # F
-])
 
-
-class Keypad():
+class Keypad:
     def __init__(self):
         self.__key_state = [False] * 16
 
@@ -35,7 +17,7 @@ class Keypad():
         return self.__key_state[key_num]
 
 
-class Timers():
+class Timers:
     def __init__(self):
         self.delay_timer = 0
         self.sound_timer = 0
@@ -50,7 +32,7 @@ class Timers():
             self.sound_timer -= 1
 
 
-class Graphics():
+class Graphics:
     def __init__(self):
         self.memory = [0] * 64 * 32
 
@@ -103,40 +85,30 @@ class Chip8:
         # 0x000-0x1FF - Chip 8 interpreter (contains font set in emu)
         # 0x050-0x0A0 - Used for the built in 4x5 pixel font set (0-F)
         # 0x200-0xFFF - Program ROM and work RAM
-        self.memory = bytearray(4056)
-        self.memory[0:80] = chip8_fontset
+        self.memory = Memory()
 
         self.op_table = [
-            self.handle_0xxx_opcode,
-            self.handle_1xxx_opcode,
-            self.handle_2xxx_opcode,
-            self.handle_3xxx_opcode,
-            self.handle_4xxx_opcode,
-            self.handle_5xxx_opcode,
-            self.handle_6xxx_opcode,
-            self.handle_7xxx_opcode,
-            self.handle_8xxx_opcode,
-            self.handle_9xxx_opcode,
-            self.handle_axxx_opcode,
-            self.handle_bxxx_opcode,
-            self.handle_cxxx_opcode,
-            self.handle_dxxx_opcode,
+            self.handle_0xxx_opcode, self.handle_1xxx_opcode,
+            self.handle_2xxx_opcode, self.handle_3xxx_opcode,
+            self.handle_4xxx_opcode, self.handle_5xxx_opcode,
+            self.handle_6xxx_opcode, self.handle_7xxx_opcode,
+            self.handle_8xxx_opcode, self.handle_9xxx_opcode,
+            self.handle_axxx_opcode, self.handle_bxxx_opcode,
+            self.handle_cxxx_opcode, self.handle_dxxx_opcode,
             self.handle_exxx_opcode
         ]
 
     def emulate_cycle(self):
-        self.opcode = int.from_bytes(
-            self.memory[self.program_counter:self.program_counter + 2],
-            byteorder='big')
+        self.opcode = int.from_bytes(self.memory.get(self.program_counter, 2),
+                                     byteorder='big')
 
         (first_digit, _, _, _) = get_opcode_digits(self.opcode)
         self.op_table[first_digit]()
         self.timers.tick()
 
-    def load_game(self, game_file):
-        game_data = game_file.read()
-        data_len = len(game_data)
-        self.memory[512:512 + data_len] = game_data
+    def load_game(self, program_file):
+        game_data = program_file.read()
+        self.memory.load(game_data)
 
     def handle_0xxx_opcode(self):
         """
@@ -282,9 +254,10 @@ class Chip8:
         self.v_registers[15] = 0
 
         for line_num in range(height):
-            sprite_line = self.memory[self.i + line_num]
-            collision = self.graphics.set_sprite_line(
-                x_coord, y_coord + line_num, sprite_line)
+            sprite_line = self.memory.get_byte(self.i + line_num)
+            collision = self.graphics.set_sprite_line(x_coord,
+                                                      y_coord + line_num,
+                                                      sprite_line)
             if collision:
                 self.v_registers[15] = 1
         self.program_counter += 2
