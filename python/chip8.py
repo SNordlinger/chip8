@@ -141,7 +141,7 @@ class Chip8:
         """
         3XNN: Skips next instruction if VX == NN
         """
-        reg = (self.opcode & 0x0F00) >> 8
+        (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
         if self.v_registers[reg] == value:
             self.program_counter += 4
@@ -152,7 +152,7 @@ class Chip8:
         """
         4XNN: Skips next instruction if VX != NN
         """
-        reg = (self.opcode & 0x0F00) >> 8
+        (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
         if self.v_registers[reg] != value:
             self.program_counter += 4
@@ -163,10 +163,9 @@ class Chip8:
         """
         5XY0: Skips next instruction if VX == VY
         """
-        reg1 = (self.opcode & 0x0f00) >> 8
-        reg2 = (self.opcode & 0x00f0) >> 4
+        (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
 
-        if self.v_registers[reg1] == self.v_registers[reg2]:
+        if self.v_registers[x_reg] == self.v_registers[y_reg]:
             self.program_counter += 4
         else:
             self.program_counter += 2
@@ -175,7 +174,7 @@ class Chip8:
         """
         6XNN: Sets VX to NN
         """
-        reg = (self.opcode & 0x0F00) >> 8
+        (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
         self.v_registers[reg] = value
         self.program_counter += 2
@@ -184,7 +183,7 @@ class Chip8:
         """
         7XNN: Adds NN to VX
         """
-        reg = (self.opcode & 0x0F00) >> 8
+        (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
         self.v_registers[reg] = (self.v_registers[reg] + value) % 256
         self.program_counter += 2
@@ -197,8 +196,7 @@ class Chip8:
         (and sometimes the carry flag) based on the state
         of the VX and VY registers
         """
-        x_reg = (self.opcode & 0x0F00) >> 8
-        y_reg = (self.opcode & 0x00F0) >> 4
+        (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
 
         x_value = self.v_registers[x_reg]
         y_value = self.v_registers[y_reg]
@@ -214,10 +212,9 @@ class Chip8:
         """
         9XY0: Skips next instruction if VX != VY
         """
-        reg1 = (self.opcode & 0x0f00) >> 8
-        reg2 = (self.opcode & 0x00f0) >> 4
+        (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
 
-        if self.v_registers[reg1] != self.v_registers[reg2]:
+        if self.v_registers[x_reg] != self.v_registers[y_reg]:
             self.program_counter += 4
         else:
             self.program_counter += 2
@@ -240,7 +237,7 @@ class Chip8:
         """
         CXNN: Sets VX to the bitwise and NNN and a random number
         """
-        reg = (self.opcode & 0x0F00) >> 8
+        (_, reg, _, _) = get_opcode_digits(self.opcode)
         val = self.opcode & 0x00FF
 
         self.v_registers[reg] = val & random.randint(0, 255)
@@ -271,8 +268,8 @@ class Chip8:
         EXA1: Skips next instruction if the key stored in VX is not pressed
         """
         opcode_end = (self.opcode & 0x00FF)
-        register = (self.opcode & 0x0F00) >> 8
-        key_num = self.v_registers[register]
+        (_, reg, _, _) = get_opcode_digits(self.opcode)
+        key_num = self.v_registers[reg]
         is_pressed = self.keys.is_pressed(key_num)
 
         if ((opcode_end == 0x9E and is_pressed)
