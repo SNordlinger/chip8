@@ -12,7 +12,7 @@ class TestOpcode1XXX:
         chip.load_game(program)
         chip.emulate_cycle()
 
-        assert chip.program_counter == 0x0542
+        assert chip.program_counter.value == 0x0542
 
 
 class TestOpcode2XXX:
@@ -21,10 +21,10 @@ class TestOpcode2XXX:
         program = BytesIO(b'\x25\x42')
         chip.load_game(program)
 
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == 0x0542
+        assert chip.program_counter.value == 0x0542
         assert chip.stack.pop() == orig_pc
 
 
@@ -35,10 +35,10 @@ class TestOpcode3XXX:
         chip.load_game(program)
 
         chip.v_registers[5] = 1
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 4
+        assert chip.program_counter.value == orig_pc + 4
 
     def test_nonequal_condition(self):
         chip = Chip8()
@@ -46,10 +46,10 @@ class TestOpcode3XXX:
         chip.load_game(program)
 
         chip.v_registers[5] = 0
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 2
+        assert chip.program_counter.value == orig_pc + 2
 
 
 class TestOpcode4XXX:
@@ -59,10 +59,10 @@ class TestOpcode4XXX:
         chip.load_game(program)
 
         chip.v_registers[1] = 1
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 2
+        assert chip.program_counter.value == orig_pc + 2
 
     def test_nonequal_condition(self):
         chip = Chip8()
@@ -70,10 +70,10 @@ class TestOpcode4XXX:
         chip.load_game(program)
 
         chip.v_registers[1] = 0
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 4
+        assert chip.program_counter.value == orig_pc + 4
 
 
 class TestOpcode5XXX:
@@ -84,10 +84,10 @@ class TestOpcode5XXX:
 
         chip.v_registers[0] = 1
         chip.v_registers[1] = 1
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 4
+        assert chip.program_counter.value == orig_pc + 4
 
     def test_nonequal_condition(self):
         chip = Chip8()
@@ -96,10 +96,10 @@ class TestOpcode5XXX:
 
         chip.v_registers[0] = 0
         chip.v_registers[1] = 1
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 2
+        assert chip.program_counter.value == orig_pc + 2
 
 
 class TestOpcode6XXX:
@@ -266,10 +266,10 @@ class TestOpcode9XXX:
 
         chip.v_registers[0] = 1
         chip.v_registers[1] = 1
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 2
+        assert chip.program_counter.value == orig_pc + 2
 
     def test_nonequal_condition(self):
         chip = Chip8()
@@ -278,10 +278,10 @@ class TestOpcode9XXX:
 
         chip.v_registers[0] = 0
         chip.v_registers[1] = 1
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 4
+        assert chip.program_counter.value == orig_pc + 4
 
 
 class TestOpcodeAXXX:
@@ -302,7 +302,7 @@ class TestOpcodeBXXX:
         chip.load_game(program)
         chip.emulate_cycle()
 
-        assert chip.program_counter == 0x112
+        assert chip.program_counter.value == 0x112
 
 
 class TestOpcodeCXXX:
@@ -350,31 +350,31 @@ class TestOpcodeEXXX:
         program = BytesIO(b'\xE2\x9E\xE2\x9E')
         chip.v_registers[2] = 5
         chip.keys.release_key(5)
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.load_game(program)
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 2
+        assert chip.program_counter.value == orig_pc + 2
 
         chip.keys.press_key(5)
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 4
+        assert chip.program_counter.value == orig_pc + 4
 
     def test_jump_when_key_not_pressed(self):
         chip = Chip8()
         program = BytesIO(b'\xE2\xA1\xE2\xA1')
         chip.v_registers[2] = 5
         chip.keys.press_key(5)
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.load_game(program)
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 2
+        assert chip.program_counter.value == orig_pc + 2
 
         chip.keys.release_key(5)
-        orig_pc = chip.program_counter
+        orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
-        assert chip.program_counter == orig_pc + 4
+        assert chip.program_counter.value == orig_pc + 4

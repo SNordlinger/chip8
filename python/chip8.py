@@ -61,9 +61,23 @@ class Graphics:
         return x + (y * 64)
 
 
+class ProgramCounter:
+    def __init__(self):
+        self.value = 0x200
+
+    def next(self):
+        self.value += 2
+
+    def skip(self):
+        self.value += 4
+
+    def jump(self, loc):
+        self.value = loc
+
+
 class Chip8:
     def __init__(self):
-        self.program_counter = 0x200
+        self.program_counter = ProgramCounter()
         self.opcode = 0
 
         self.stack = []
@@ -102,7 +116,7 @@ class Chip8:
         ]
 
     def emulate_cycle(self):
-        self.opcode = int.from_bytes(self.memory.get(self.program_counter, 2),
+        self.opcode = int.from_bytes(self.memory.get(self.program_counter.value, 2),
                                      byteorder='big')
 
         (first_digit, _, _, _) = get_opcode_digits(self.opcode)
@@ -121,21 +135,21 @@ class Chip8:
         if self.opcode & 0x000F == 0:
             self.graphics.clear()
         else:
-            self.program_counter = self.stack.pop()
-        self.program_counter += 2
+            self.program_counter.jump(self.stack.pop())
+        self.program_counter.next()
 
     def handle_1xxx_opcode(self):
         """
         1NNN: Jump to address NNN
         """
-        self.program_counter = self.opcode & 0x0FFF
+        self.program_counter.jump(self.opcode & 0x0FFF)
 
     def handle_2xxx_opcode(self):
         """
         2NNN: Call subroutine as NNN
         """
-        self.stack.append(self.program_counter)
-        self.program_counter = self.opcode & 0x0FFF
+        self.stack.append(self.program_counter.value)
+        self.program_counter.jump(self.opcode & 0x0FFF)
 
     def handle_3xxx_opcode(self):
         """
@@ -144,9 +158,9 @@ class Chip8:
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
         if self.v_registers[reg] == value:
-            self.program_counter += 4
+            self.program_counter.skip()
         else:
-            self.program_counter += 2
+            self.program_counter.next()
 
     def handle_4xxx_opcode(self):
         """
@@ -155,9 +169,9 @@ class Chip8:
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
         if self.v_registers[reg] != value:
-            self.program_counter += 4
+            self.program_counter.skip()
         else:
-            self.program_counter += 2
+            self.program_counter.next()
 
     def handle_5xxx_opcode(self):
         """
@@ -166,9 +180,9 @@ class Chip8:
         (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
 
         if self.v_registers[x_reg] == self.v_registers[y_reg]:
-            self.program_counter += 4
+            self.program_counter.skip()
         else:
-            self.program_counter += 2
+            self.program_counter.next()
 
     def handle_6xxx_opcode(self):
         """
@@ -177,7 +191,7 @@ class Chip8:
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
         self.v_registers[reg] = value
-        self.program_counter += 2
+        self.program_counter.next()
 
     def handle_7xxx_opcode(self):
         """
@@ -186,7 +200,7 @@ class Chip8:
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
         self.v_registers[reg] = (self.v_registers[reg] + value) % 256
-        self.program_counter += 2
+        self.program_counter.next()
 
     def handle_8xxx_opcode(self):
         """
@@ -207,6 +221,7 @@ class Chip8:
 
         self.v_registers[x_reg] = new_x_value
         self.v_registers[0xF] = new_carry
+        self.program_counter.next()
 
     def handle_9xxx_opcode(self):
         """
@@ -215,23 +230,23 @@ class Chip8:
         (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
 
         if self.v_registers[x_reg] != self.v_registers[y_reg]:
-            self.program_counter += 4
+            self.program_counter.skip()
         else:
-            self.program_counter += 2
+            self.program_counter.next()
 
     def handle_axxx_opcode(self):
         """
         ANNN: Sets the index register to NNN
         """
         self.i = self.opcode & 0x0FFF
-        self.program_counter += 2
+        self.program_counter.next()
 
     def handle_bxxx_opcode(self):
         """
         BNNN: Jumps to the address NNN + V0
         """
         offset = self.opcode & 0x0FFF
-        self.program_counter = self.v_registers[0] + offset
+        self.program_counter.value = self.v_registers[0] + offset
 
     def handle_cxxx_opcode(self):
         """
@@ -241,6 +256,7 @@ class Chip8:
         val = self.opcode & 0x00FF
 
         self.v_registers[reg] = val & random.randint(0, 255)
+        self.program_counter.next()
 
     def handle_dxxx_opcode(self):
         """
@@ -260,7 +276,7 @@ class Chip8:
                                                       sprite_line)
             if collision:
                 self.v_registers[15] = 1
-        self.program_counter += 2
+        self.program_counter.next()
 
     def handle_exxx_opcode(self):
         """
@@ -274,9 +290,9 @@ class Chip8:
 
         if ((opcode_end == 0x9E and is_pressed)
                 or (opcode_end == 0xA1 and not is_pressed)):
-            self.program_counter += 4
+            self.program_counter.skip()
         else:
-            self.program_counter += 2
+            self.program_counter.next()
 
 
 def get_opcode_digits(opcode):
