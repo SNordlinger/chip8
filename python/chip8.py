@@ -54,14 +54,17 @@ class Graphics:
         gfx_loc = Graphics.__get_memory_loc(x, y)
         return self.memory[gfx_loc:gfx_loc + length]
 
+    def clear(self):
+        self.memory = [0] * 64 * 32
+
     def __get_memory_loc(x, y):
         return x + (y * 64)
 
 
 class Chip8:
     def __init__(self):
-        self.opcode = 0
         self.program_counter = 0x200
+        self.opcode = 0
 
         self.stack = []
 
@@ -116,7 +119,7 @@ class Chip8:
         00EE: Returns from a subroutine
         """
         if self.opcode & 0x000F == 0:
-            self.gfx = [0] * (64 * 32)
+            self.graphics.clear()
         else:
             self.program_counter = self.stack.pop()
         self.program_counter += 2
