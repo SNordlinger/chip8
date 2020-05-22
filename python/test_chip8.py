@@ -325,23 +325,22 @@ class TestOpcodeDXXX:
         chip.load_game(program)
         chip.emulate_cycle()
 
-        expected_x = 2
-        expected_y = 3
-        gfx_line1 = chip.gfx[expected_x + expected_y * 8]
-        gfx_line2 = chip.gfx[expected_x + (expected_y + 1) * 8]
-        gfx_line3 = chip.gfx[expected_x + (expected_y + 2) * 8]
+        gfx_line1 = chip.graphics.get_gfx_state(2, 3, 8)
+        gfx_line2 = chip.graphics.get_gfx_state(2, 4, 8)
+        gfx_line3 = chip.graphics.get_gfx_state(2, 5, 8)
 
-        assert gfx_line1 == 0x3C
-        assert gfx_line2 == 0xC3
-        assert gfx_line3 == 0xFF
+        assert gfx_line1 == [0, 0, 1, 1, 1, 1, 0, 0]
+        assert gfx_line2 == [1, 1, 0, 0, 0, 0, 1, 1]
+        assert gfx_line3 == [1, 1, 1, 1, 1, 1, 1, 1]
         assert chip.v_registers[15] == 0
 
-        chip.memory[84] = 0x3C
+        chip.memory[84] = 0x24
+        chip.i = 84
         chip.emulate_cycle()
 
-        gfx_line1 = chip.gfx[expected_x + expected_y * 8]
+        gfx_line1 = chip.graphics.get_gfx_state(2, 3, 8)
 
-        assert gfx_line1 == 0x00
+        assert gfx_line1 == [0, 0, 0, 1, 1, 0, 0, 0]
         assert chip.v_registers[15] == 1
 
 

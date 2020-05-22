@@ -50,6 +50,32 @@ class Timers():
             self.sound_timer -= 1
 
 
+class Graphics():
+    def __init__(self):
+        self.memory = [0] * 64 * 32
+
+    def set_sprite_line(self, x, y, sprite_data):
+        gfx_loc = Graphics.__get_memory_loc(x, y)
+        collision = False
+        for i in range(8):
+            new_pixel_set = sprite_data & (0x80 >> i) != 0
+            old_pixel_set = self.memory[gfx_loc + i] == 1
+            if new_pixel_set:
+                if old_pixel_set:
+                    collision = True
+                    self.memory[gfx_loc + i] = 0
+                else:
+                    self.memory[gfx_loc + i] = 1
+        return collision
+
+    def get_gfx_state(self, x, y, length):
+        gfx_loc = Graphics.__get_memory_loc(x, y)
+        return self.memory[gfx_loc:gfx_loc + length]
+
+    def __get_memory_loc(x, y):
+        return x + (y * 64)
+
+
 class Chip8:
     def __init__(self):
         self.opcode = 0
@@ -65,7 +91,7 @@ class Chip8:
         self.i = 0
 
         # Graphics memory
-        self.gfx = bytearray(64 * 32)
+        self.graphics = Graphics()
 
         # Timer registers should count at 60hz
         self.timers = Timers()
@@ -251,20 +277,16 @@ class Chip8:
         Draws a sprite of size 8xN at the coordinates read from the
         VX and VY registers
         """
-        x_coord = (self.opcode & 0x0F00) >> 8
-        y_coord = (self.opcode & 0x00F0) >> 4
-        height = self.opcode & 0x000F
+        (_, x_coord, y_coord, height) = get_opcode_digits(self.opcode)
 
         self.v_registers[15] = 0
 
         for line_num in range(height):
-            gfx_loc = x_coord + (y_coord + line_num) * 8
             sprite_line = self.memory[self.i + line_num]
-            current_gfx = self.gfx[gfx_loc]
-            new_gfx = sprite_line ^ current_gfx
-            if new_gfx != sprite_line | current_gfx:
+            collision = self.graphics.set_sprite_line(
+                x_coord, y_coord + line_num, sprite_line)
+            if collision:
                 self.v_registers[15] = 1
-            self.gfx[gfx_loc] = new_gfx
         self.program_counter += 2
 
     def handle_exxx_opcode(self):
