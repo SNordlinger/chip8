@@ -304,6 +304,7 @@ class TestOpcodeBXXX:
 
         assert chip.program_counter == 0x112
 
+
 class TestOpcodeCXXX:
     def test_set_random(self):
         chip = Chip8()
@@ -313,6 +314,7 @@ class TestOpcodeCXXX:
         chip.emulate_cycle()
 
         assert chip.v_registers[1] == 0xC
+
 
 class TestOpcodeDXXX:
     def test_display_sprite(self):
@@ -341,6 +343,7 @@ class TestOpcodeDXXX:
 
         assert gfx_line1 == 0x00
         assert chip.v_registers[15] == 1
+
 
 class TestOpcodeEXXX:
     def test_jump_when_key_pressed(self):
