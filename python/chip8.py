@@ -2,22 +2,22 @@ import random
 import opcode_8xxx_operations
 
 chip8_fontset = ([
-    0xF0, 0x90, 0x90, 0x90, 0xF0, # 0
-    0x20, 0x60, 0x20, 0x20, 0x70, # 1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, # 2
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, # 3
-    0x90, 0x90, 0xF0, 0x10, 0x10, # 4
-    0xF0, 0x80, 0xF0, 0x10, 0xF0, # 5
-    0xF0, 0x80, 0xF0, 0x90, 0xF0, # 6
-    0xF0, 0x10, 0x20, 0x40, 0x40, # 7
-    0xF0, 0x90, 0xF0, 0x90, 0xF0, # 8
-    0xF0, 0x90, 0xF0, 0x10, 0xF0, # 9
-    0xF0, 0x90, 0xF0, 0x90, 0x90, # A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, # B
-    0xF0, 0x80, 0x80, 0x80, 0xF0, # C
-    0xE0, 0x90, 0x90, 0x90, 0xE0, # D
-    0xF0, 0x80, 0xF0, 0x80, 0xF0, # E
-    0xF0, 0x80, 0xF0, 0x80, 0x80  # F
+    0xF0, 0x90, 0x90, 0x90, 0xF0,  # 0
+    0x20, 0x60, 0x20, 0x20, 0x70,  # 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0,  # 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0,  # 3
+    0x90, 0x90, 0xF0, 0x10, 0x10,  # 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0,  # 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0,  # 6
+    0xF0, 0x10, 0x20, 0x40, 0x40,  # 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0,  # 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0,  # 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90,  # A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0,  # B
+    0xF0, 0x80, 0x80, 0x80, 0xF0,  # C
+    0xE0, 0x90, 0x90, 0x90, 0xE0,  # D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0,  # E
+    0xF0, 0x80, 0xF0, 0x80, 0x80   # F
 ])
 
 
@@ -35,7 +35,22 @@ class Keypad():
         return self.__key_state[key_num]
 
 
-class Chip8: # pylint: disable=too-many-instance-attributes
+class Timers():
+    def __init__(self):
+        self.delay_timer = 0
+        self.sound_timer = 0
+
+    def tick(self):
+        if self.delay_timer > 0:
+            self.delay_timer -= 1
+
+        if self.sound_timer > 0:
+            if self.sound_timer == 1:
+                print('BEEP\n')
+            self.sound_timer -= 1
+
+
+class Chip8:
     def __init__(self):
         self.opcode = 0
         self.program_counter = 0x200
@@ -53,8 +68,7 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         self.gfx = bytearray(64 * 32)
 
         # Timer registers should count at 60hz
-        self.delay_timer = 0
-        self.sound_timer = 0
+        self.timers = Timers()
 
         # State of hex-based keypad
         self.keys = Keypad()
@@ -90,14 +104,7 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             byteorder='big')
 
         self.op_table[self.opcode >> 12]()
-
-        if self.delay_timer > 0:
-            self.delay_timer -= 1
-
-        if self.sound_timer > 0:
-            if self.sound_timer == 1:
-                print('BEEP\n')
-            self.sound_timer -= 1
+        self.timers.tick()
 
     def load_game(self, game_file):
         game_data = game_file.read()
@@ -195,7 +202,8 @@ class Chip8: # pylint: disable=too-many-instance-attributes
         y_value = self.v_registers[y_reg]
         carry = self.v_registers[0xF]
 
-        new_x_value, new_carry = opcode_8xxx_operations.apply(self.opcode, x_value, y_value, carry)
+        new_x_value, new_carry = opcode_8xxx_operations.apply(
+            self.opcode, x_value, y_value, carry)
 
         self.v_registers[x_reg] = new_x_value
         self.v_registers[0xF] = new_carry
@@ -273,3 +281,8 @@ class Chip8: # pylint: disable=too-many-instance-attributes
             self.program_counter += 4
         else:
             self.program_counter += 2
+
+
+def get_opcode_digits(opcode):
+    first = (opcode & 0xF000) >> 12
+    return (first)
