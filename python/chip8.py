@@ -103,7 +103,8 @@ class Chip8:
             self.memory[self.program_counter:self.program_counter + 2],
             byteorder='big')
 
-        self.op_table[self.opcode >> 12]()
+        (first_digit, _, _, _) = get_opcode_digits(self.opcode)
+        self.op_table[first_digit]()
         self.timers.tick()
 
     def load_game(self, game_file):
@@ -284,5 +285,8 @@ class Chip8:
 
 
 def get_opcode_digits(opcode):
-    first = (opcode & 0xF000) >> 12
-    return (first)
+    first = opcode >> 12
+    second = (opcode & 0x0F00) >> 8
+    third = (opcode & 0x00F0) >> 4
+    fourth = opcode & 0x000F
+    return (first, second, third, fourth)
