@@ -34,7 +34,7 @@ class TestOpcode3XXX:
         program = BytesIO(b'\x35\x01')
         chip.load_game(program)
 
-        chip.v_registers[5] = 1
+        chip.registers.v[5] = 1
         orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
@@ -45,7 +45,7 @@ class TestOpcode3XXX:
         program = BytesIO(b'\x35\x01')
         chip.load_game(program)
 
-        chip.v_registers[5] = 0
+        chip.registers.v[5] = 0
         orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
@@ -58,7 +58,7 @@ class TestOpcode4XXX:
         program = BytesIO(b'\x41\x01')
         chip.load_game(program)
 
-        chip.v_registers[1] = 1
+        chip.registers.v[1] = 1
         orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
@@ -69,7 +69,7 @@ class TestOpcode4XXX:
         program = BytesIO(b'\x41\x01')
         chip.load_game(program)
 
-        chip.v_registers[1] = 0
+        chip.registers.v[1] = 0
         orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
@@ -82,8 +82,8 @@ class TestOpcode5XXX:
         program = BytesIO(b'\x50\x10')
         chip.load_game(program)
 
-        chip.v_registers[0] = 1
-        chip.v_registers[1] = 1
+        chip.registers.v[0] = 1
+        chip.registers.v[1] = 1
         orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
@@ -94,8 +94,8 @@ class TestOpcode5XXX:
         program = BytesIO(b'\x50\x10')
         chip.load_game(program)
 
-        chip.v_registers[0] = 0
-        chip.v_registers[1] = 1
+        chip.registers.v[0] = 0
+        chip.registers.v[1] = 1
         orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
@@ -109,7 +109,7 @@ class TestOpcode6XXX:
         chip.load_game(program)
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0x0042
+        assert chip.registers.v[7] == 0x0042
 
 
 class TestOpcode7XXX:
@@ -119,10 +119,10 @@ class TestOpcode7XXX:
         chip.load_game(program)
 
         chip.emulate_cycle()
-        assert chip.v_registers[8] == 0x0005
+        assert chip.registers.v[8] == 0x0005
 
         chip.emulate_cycle()
-        assert chip.v_registers[8] == 0x0002
+        assert chip.registers.v[8] == 0x0002
 
 
 class TestOpcode8XXX:
@@ -131,131 +131,131 @@ class TestOpcode8XXX:
         program = BytesIO(b'\x87\x40')
         chip.load_game(program)
 
-        chip.v_registers[4] = 1
-        chip.v_registers[7] = 0
+        chip.registers.v[4] = 1
+        chip.registers.v[7] = 0
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 1
+        assert chip.registers.v[7] == 1
 
     def test_bitwise_or(self):
         chip = Chip8()
         program = BytesIO(b'\x87\x41')
         chip.load_game(program)
 
-        chip.v_registers[4] = 0x01
-        chip.v_registers[7] = 0x10
+        chip.registers.v[4] = 0x01
+        chip.registers.v[7] = 0x10
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0x11
+        assert chip.registers.v[7] == 0x11
 
     def test_bitwise_and(self):
         chip = Chip8()
         program = BytesIO(b'\x87\x42')
         chip.load_game(program)
 
-        chip.v_registers[4] = 0x0F
-        chip.v_registers[7] = 0x13
+        chip.registers.v[4] = 0x0F
+        chip.registers.v[7] = 0x13
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0x03
+        assert chip.registers.v[7] == 0x03
 
     def test_xor(self):
         chip = Chip8()
         program = BytesIO(b'\x87\x43')
         chip.load_game(program)
 
-        chip.v_registers[4] = 0x03
-        chip.v_registers[7] = 0x11
+        chip.registers.v[4] = 0x03
+        chip.registers.v[7] = 0x11
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0x12
+        assert chip.registers.v[7] == 0x12
 
     def test_addition(self):
         chip = Chip8()
         program = BytesIO(b'\x87\x44\x87\x44')
         chip.load_game(program)
 
-        chip.v_registers[4] = 0x01
-        chip.v_registers[7] = 0x10
+        chip.registers.v[4] = 0x01
+        chip.registers.v[7] = 0x10
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0x11
-        assert chip.v_registers[0xF] == 0
+        assert chip.registers.v[7] == 0x11
+        assert chip.registers.v[0xF] == 0
 
-        chip.v_registers[4] = 0xFF
+        chip.registers.v[4] = 0xFF
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0x10
-        assert chip.v_registers[0xF] == 1
+        assert chip.registers.v[7] == 0x10
+        assert chip.registers.v[0xF] == 1
 
     def test_sub_x_y(self):
         chip = Chip8()
         program = BytesIO(b'\x87\x45\x87\x45')
         chip.load_game(program)
 
-        chip.v_registers[4] = 0x01
-        chip.v_registers[7] = 0x10
+        chip.registers.v[4] = 0x01
+        chip.registers.v[7] = 0x10
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0x0F
-        assert chip.v_registers[0xF] == 0
+        assert chip.registers.v[7] == 0x0F
+        assert chip.registers.v[0xF] == 0
 
-        chip.v_registers[4] = 0x10
+        chip.registers.v[4] = 0x10
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0xFF
-        assert chip.v_registers[0xF] == 1
+        assert chip.registers.v[7] == 0xFF
+        assert chip.registers.v[0xF] == 1
 
     def test_shift_right(self):
         chip = Chip8()
         program = BytesIO(b'\x87\x46\x87\x46')
         chip.load_game(program)
 
-        chip.v_registers[7] = 2
+        chip.registers.v[7] = 2
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 1
-        assert chip.v_registers[0xF] == 0
+        assert chip.registers.v[7] == 1
+        assert chip.registers.v[0xF] == 0
 
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0
-        assert chip.v_registers[0xF] == 1
+        assert chip.registers.v[7] == 0
+        assert chip.registers.v[0xF] == 1
 
     def test_sub_y_x(self):
         chip = Chip8()
         program = BytesIO(b'\x87\x47\x87\x47')
         chip.load_game(program)
 
-        chip.v_registers[4] = 0x01
-        chip.v_registers[7] = 0x10
+        chip.registers.v[4] = 0x01
+        chip.registers.v[7] = 0x10
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0xF1
-        assert chip.v_registers[0xF] == 1
+        assert chip.registers.v[7] == 0xF1
+        assert chip.registers.v[0xF] == 1
 
-        chip.v_registers[4] = 0x20
-        chip.v_registers[7] = 0x10
+        chip.registers.v[4] = 0x20
+        chip.registers.v[7] = 0x10
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 0x10
-        assert chip.v_registers[0xF] == 0
+        assert chip.registers.v[7] == 0x10
+        assert chip.registers.v[0xF] == 0
 
     def test_shift_left(self):
         chip = Chip8()
         program = BytesIO(b'\x87\x4E\x87\x4E')
         chip.load_game(program)
 
-        chip.v_registers[7] = 0x81
+        chip.registers.v[7] = 0x81
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 2
-        assert chip.v_registers[0xF] == 1
+        assert chip.registers.v[7] == 2
+        assert chip.registers.v[0xF] == 1
 
         chip.emulate_cycle()
 
-        assert chip.v_registers[7] == 4
-        assert chip.v_registers[0xF] == 0
+        assert chip.registers.v[7] == 4
+        assert chip.registers.v[0xF] == 0
 
 
 class TestOpcode9XXX:
@@ -264,8 +264,8 @@ class TestOpcode9XXX:
         program = BytesIO(b'\x90\x10')
         chip.load_game(program)
 
-        chip.v_registers[0] = 1
-        chip.v_registers[1] = 1
+        chip.registers.v[0] = 1
+        chip.registers.v[1] = 1
         orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
@@ -276,8 +276,8 @@ class TestOpcode9XXX:
         program = BytesIO(b'\x90\x10')
         chip.load_game(program)
 
-        chip.v_registers[0] = 0
-        chip.v_registers[1] = 1
+        chip.registers.v[0] = 0
+        chip.registers.v[1] = 1
         orig_pc = chip.program_counter.value
         chip.emulate_cycle()
 
@@ -298,7 +298,7 @@ class TestOpcodeBXXX:
     def test_jump_w_offset(self):
         chip = Chip8()
         program = BytesIO(b'\xB1\x11')
-        chip.v_registers[0] = 1
+        chip.registers.v[0] = 1
         chip.load_game(program)
         chip.emulate_cycle()
 
@@ -313,14 +313,14 @@ class TestOpcodeCXXX:
         chip.load_game(program)
         chip.emulate_cycle()
 
-        assert chip.v_registers[1] == 0xC
+        assert chip.registers.v[1] == 0xC
 
 
 class TestOpcodeDXXX:
     def test_display_sprite(self):
         chip = Chip8()
         program = BytesIO(b'\xD2\x33\xD2\x31')
-        chip.i = 80
+        chip.registers.i = 80
         chip.memory.set(80, b'\x3C\xC3\xFF')
         chip.load_game(program)
         chip.emulate_cycle()
@@ -332,23 +332,23 @@ class TestOpcodeDXXX:
         assert gfx_line1 == [0, 0, 1, 1, 1, 1, 0, 0]
         assert gfx_line2 == [1, 1, 0, 0, 0, 0, 1, 1]
         assert gfx_line3 == [1, 1, 1, 1, 1, 1, 1, 1]
-        assert chip.v_registers[15] == 0
+        assert chip.registers.v[15] == 0
 
         chip.memory.set_byte(84, 0x24)
-        chip.i = 84
+        chip.registers.i = 84
         chip.emulate_cycle()
 
         gfx_line1 = chip.graphics.get_gfx_state(2, 3, 8)
 
         assert gfx_line1 == [0, 0, 0, 1, 1, 0, 0, 0]
-        assert chip.v_registers[15] == 1
+        assert chip.registers.v[15] == 1
 
 
 class TestOpcodeEXXX:
     def test_jump_when_key_pressed(self):
         chip = Chip8()
         program = BytesIO(b'\xE2\x9E\xE2\x9E')
-        chip.v_registers[2] = 5
+        chip.registers.v[2] = 5
         chip.keys.release_key(5)
         orig_pc = chip.program_counter.value
         chip.load_game(program)
@@ -365,7 +365,7 @@ class TestOpcodeEXXX:
     def test_jump_when_key_not_pressed(self):
         chip = Chip8()
         program = BytesIO(b'\xE2\xA1\xE2\xA1')
-        chip.v_registers[2] = 5
+        chip.registers.v[2] = 5
         chip.keys.press_key(5)
         orig_pc = chip.program_counter.value
         chip.load_game(program)

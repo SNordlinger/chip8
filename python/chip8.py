@@ -1,6 +1,13 @@
+from dataclasses import dataclass
 import random
 from memory import Memory
 import opcode_8xxx_operations
+
+
+@dataclass
+class Registers:
+    v: bytearray = bytearray(16)
+    i: int = 0
 
 
 class Keypad:
@@ -84,7 +91,7 @@ class Chip8:
 
         # Chip 8 has 15 8-bit registers: V0-VE
         # 16th register is carry flag
-        self.v_registers = bytearray(16)
+        self.registers = Registers()
 
         # Index register
         self.i = 0
@@ -116,7 +123,8 @@ class Chip8:
         ]
 
     def emulate_cycle(self):
-        self.opcode = int.from_bytes(self.memory.get(self.program_counter.value, 2),
+        self.opcode = int.from_bytes(self.memory.get(
+            self.program_counter.value, 2),
                                      byteorder='big')
 
         (first_digit, _, _, _) = get_opcode_digits(self.opcode)
@@ -157,7 +165,7 @@ class Chip8:
         """
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
-        if self.v_registers[reg] == value:
+        if self.registers.v[reg] == value:
             self.program_counter.skip()
         else:
             self.program_counter.next()
@@ -168,7 +176,7 @@ class Chip8:
         """
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
-        if self.v_registers[reg] != value:
+        if self.registers.v[reg] != value:
             self.program_counter.skip()
         else:
             self.program_counter.next()
@@ -179,7 +187,7 @@ class Chip8:
         """
         (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
 
-        if self.v_registers[x_reg] == self.v_registers[y_reg]:
+        if self.registers.v[x_reg] == self.registers.v[y_reg]:
             self.program_counter.skip()
         else:
             self.program_counter.next()
@@ -190,7 +198,7 @@ class Chip8:
         """
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
-        self.v_registers[reg] = value
+        self.registers.v[reg] = value
         self.program_counter.next()
 
     def handle_7xxx_opcode(self):
@@ -199,7 +207,7 @@ class Chip8:
         """
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         value = self.opcode & 0x00FF
-        self.v_registers[reg] = (self.v_registers[reg] + value) % 256
+        self.registers.v[reg] = (self.registers.v[reg] + value) % 256
         self.program_counter.next()
 
     def handle_8xxx_opcode(self):
@@ -212,15 +220,15 @@ class Chip8:
         """
         (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
 
-        x_value = self.v_registers[x_reg]
-        y_value = self.v_registers[y_reg]
-        carry = self.v_registers[0xF]
+        x_value = self.registers.v[x_reg]
+        y_value = self.registers.v[y_reg]
+        carry = self.registers.v[0xF]
 
         new_x_value, new_carry = opcode_8xxx_operations.apply(
             self.opcode, x_value, y_value, carry)
 
-        self.v_registers[x_reg] = new_x_value
-        self.v_registers[0xF] = new_carry
+        self.registers.v[x_reg] = new_x_value
+        self.registers.v[0xF] = new_carry
         self.program_counter.next()
 
     def handle_9xxx_opcode(self):
@@ -229,7 +237,7 @@ class Chip8:
         """
         (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
 
-        if self.v_registers[x_reg] != self.v_registers[y_reg]:
+        if self.registers.v[x_reg] != self.registers.v[y_reg]:
             self.program_counter.skip()
         else:
             self.program_counter.next()
@@ -246,7 +254,7 @@ class Chip8:
         BNNN: Jumps to the address NNN + V0
         """
         offset = self.opcode & 0x0FFF
-        self.program_counter.value = self.v_registers[0] + offset
+        self.program_counter.value = self.registers.v[0] + offset
 
     def handle_cxxx_opcode(self):
         """
@@ -255,7 +263,7 @@ class Chip8:
         (_, reg, _, _) = get_opcode_digits(self.opcode)
         val = self.opcode & 0x00FF
 
-        self.v_registers[reg] = val & random.randint(0, 255)
+        self.registers.v[reg] = val & random.randint(0, 255)
         self.program_counter.next()
 
     def handle_dxxx_opcode(self):
@@ -267,15 +275,15 @@ class Chip8:
         """
         (_, x_coord, y_coord, height) = get_opcode_digits(self.opcode)
 
-        self.v_registers[15] = 0
+        self.registers.v[15] = 0
 
         for line_num in range(height):
-            sprite_line = self.memory.get_byte(self.i + line_num)
+            sprite_line = self.memory.get_byte(self.registers.i + line_num)
             collision = self.graphics.set_sprite_line(x_coord,
                                                       y_coord + line_num,
                                                       sprite_line)
             if collision:
-                self.v_registers[15] = 1
+                self.registers.v[15] = 1
         self.program_counter.next()
 
     def handle_exxx_opcode(self):
@@ -285,7 +293,7 @@ class Chip8:
         """
         opcode_end = (self.opcode & 0x00FF)
         (_, reg, _, _) = get_opcode_digits(self.opcode)
-        key_num = self.v_registers[reg]
+        key_num = self.registers.v[reg]
         is_pressed = self.keys.is_pressed(key_num)
 
         if ((opcode_end == 0x9E and is_pressed)
