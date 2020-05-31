@@ -90,7 +90,6 @@ class ProgramCounter:
 class Chip8:
     def __init__(self):
         self.program_counter = ProgramCounter()
-        self.opcode = 0
 
         self.stack = []
 
@@ -144,13 +143,13 @@ class Chip8:
         self.op_table[first_digit] = command_set
 
     def emulate_cycle(self):
-        self.opcode = int.from_bytes(self.memory.get(
+        opcode = int.from_bytes(self.memory.get(
             self.program_counter.value, 2),
                                      byteorder='big')
 
-        (first_digit, _, _, _) = get_opcode_digits(self.opcode)
+        (first_digit, _, _, _) = get_opcode_digits(opcode)
         opcode_set = self.op_table[first_digit]
-        opcode_set.execute(self.opcode)
+        opcode_set.execute(opcode)
         self.timers.tick()
 
     def load_game(self, program_file):
