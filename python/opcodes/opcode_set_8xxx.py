@@ -27,7 +27,7 @@ class OpcodeSet8xxx(OpcodeSet):
         x_value = self.registers.v[x_reg]
         y_value = self.registers.v[y_reg]
         if last_hex_digit == 0x000E:
-            op = self.shift_left_8XXE
+            op = self.shift_left_8xxE
         else:
             op = self.operation_table[last_hex_digit]
         op(x_reg, x_value, y_value)
