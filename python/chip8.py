@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 import random
 from memory import Memory
-import opcode_8xxx_operations
+from util import get_opcode_digits
+from opcode_set_8xxx import OpcodeSet8XXX
 
 
 @dataclass
@@ -115,12 +116,24 @@ class Chip8:
             self.handle_0xxx_opcode, self.handle_1xxx_opcode,
             self.handle_2xxx_opcode, self.handle_3xxx_opcode,
             self.handle_4xxx_opcode, self.handle_5xxx_opcode,
-            self.handle_6xxx_opcode, self.handle_7xxx_opcode,
-            self.handle_8xxx_opcode, self.handle_9xxx_opcode,
-            self.handle_axxx_opcode, self.handle_bxxx_opcode,
-            self.handle_cxxx_opcode, self.handle_dxxx_opcode,
-            self.handle_exxx_opcode
+            self.handle_6xxx_opcode, self.handle_7xxx_opcode, None,
+            self.handle_9xxx_opcode, self.handle_axxx_opcode,
+            self.handle_bxxx_opcode, self.handle_cxxx_opcode,
+            self.handle_dxxx_opcode, self.handle_exxx_opcode
         ]
+        self.register(8, OpcodeSet8XXX)
+
+    def register(self, first_digit, Command):
+        command_set = Command(registers=self.registers,
+                              timers=self.timers,
+                              keypad=self.keys,
+                              graphics=self.graphics,
+                              program_counter=self.program_counter,
+                              memory=self.memory)
+        if len(self.op_table) <= first_digit:
+            expand_len = (first_digit + 1) - len(self.op_table)
+            self.op_table = self.op_table + ([None] * expand_len)
+        self.op_table[first_digit] = command_set
 
     def emulate_cycle(self):
         self.opcode = int.from_bytes(self.memory.get(
@@ -128,7 +141,11 @@ class Chip8:
                                      byteorder='big')
 
         (first_digit, _, _, _) = get_opcode_digits(self.opcode)
-        self.op_table[first_digit]()
+        if first_digit == 8:
+            command_set = self.op_table[first_digit]
+            command_set.execute(self.opcode)
+        else:
+            self.op_table[first_digit]()
         self.timers.tick()
 
     def load_game(self, program_file):
@@ -210,27 +227,6 @@ class Chip8:
         self.registers.v[reg] = (self.registers.v[reg] + value) % 256
         self.program_counter.next()
 
-    def handle_8xxx_opcode(self):
-        """
-        8XY0 - 8XYE
-
-        Each of the many 8xxx opcodes sets the VX register
-        (and sometimes the carry flag) based on the state
-        of the VX and VY registers
-        """
-        (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
-
-        x_value = self.registers.v[x_reg]
-        y_value = self.registers.v[y_reg]
-        carry = self.registers.v[0xF]
-
-        new_x_value, new_carry = opcode_8xxx_operations.apply(
-            self.opcode, x_value, y_value, carry)
-
-        self.registers.v[x_reg] = new_x_value
-        self.registers.v[0xF] = new_carry
-        self.program_counter.next()
-
     def handle_9xxx_opcode(self):
         """
         9XY0: Skips next instruction if VX != VY
@@ -301,11 +297,3 @@ class Chip8:
             self.program_counter.skip()
         else:
             self.program_counter.next()
-
-
-def get_opcode_digits(opcode):
-    first = opcode >> 12
-    second = (opcode & 0x0F00) >> 8
-    third = (opcode & 0x00F0) >> 4
-    fourth = opcode & 0x000F
-    return (first, second, third, fourth)
