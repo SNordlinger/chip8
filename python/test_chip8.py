@@ -291,7 +291,7 @@ class TestOpcodeAXXX:
         chip.load_game(program)
         chip.emulate_cycle()
 
-        assert chip.i == 1
+        assert chip.registers.i == 1
 
 
 class TestOpcodeBXXX:

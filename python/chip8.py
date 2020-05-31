@@ -1,8 +1,12 @@
 from dataclasses import dataclass
-import random
 from memory import Memory
 from util import get_opcode_digits
-from opcode_set_8xxx import OpcodeSet8XXX
+from opcodes.opcode_sets_0_2 import OpcodeSet0xxx, OpcodeSet1xxx, OpcodeSet2xxx
+from opcodes.opcode_sets_3_5 import OpcodeSet3xxx, OpcodeSet4xxx, OpcodeSet5xxx
+from opcodes.opcode_sets_6_7 import OpcodeSet6xxx, OpcodeSet7xxx
+from opcodes.opcode_set_8xxx import OpcodeSet8xxx
+from opcodes.opcode_sets_9_b import OpcodeSet9xxx, OpcodeSetAxxx, OpcodeSetBxxx
+from opcodes.opcode_sets_c_e import OpcodeSetCxxx, OpcodeSetDxxx, OpcodeSetExxx
 
 
 @dataclass
@@ -112,16 +116,22 @@ class Chip8:
         # 0x200-0xFFF - Program ROM and work RAM
         self.memory = Memory()
 
-        self.op_table = [
-            self.handle_0xxx_opcode, self.handle_1xxx_opcode,
-            self.handle_2xxx_opcode, self.handle_3xxx_opcode,
-            self.handle_4xxx_opcode, self.handle_5xxx_opcode,
-            self.handle_6xxx_opcode, self.handle_7xxx_opcode, None,
-            self.handle_9xxx_opcode, self.handle_axxx_opcode,
-            self.handle_bxxx_opcode, self.handle_cxxx_opcode,
-            self.handle_dxxx_opcode, self.handle_exxx_opcode
-        ]
-        self.register(8, OpcodeSet8XXX)
+        self.op_table = [None] * 16
+        self.register(0, OpcodeSet0xxx)
+        self.register(1, OpcodeSet1xxx)
+        self.register(2, OpcodeSet2xxx)
+        self.register(3, OpcodeSet3xxx)
+        self.register(4, OpcodeSet4xxx)
+        self.register(5, OpcodeSet5xxx)
+        self.register(6, OpcodeSet6xxx)
+        self.register(7, OpcodeSet7xxx)
+        self.register(8, OpcodeSet8xxx)
+        self.register(9, OpcodeSet9xxx)
+        self.register(0xA, OpcodeSetAxxx)
+        self.register(0xB, OpcodeSetBxxx)
+        self.register(0xC, OpcodeSetCxxx)
+        self.register(0xD, OpcodeSetDxxx)
+        self.register(0xE, OpcodeSetExxx)
 
     def register(self, first_digit, Command):
         command_set = Command(registers=self.registers,
@@ -129,10 +139,8 @@ class Chip8:
                               keypad=self.keys,
                               graphics=self.graphics,
                               program_counter=self.program_counter,
+                              stack=self.stack,
                               memory=self.memory)
-        if len(self.op_table) <= first_digit:
-            expand_len = (first_digit + 1) - len(self.op_table)
-            self.op_table = self.op_table + ([None] * expand_len)
         self.op_table[first_digit] = command_set
 
     def emulate_cycle(self):
@@ -141,159 +149,10 @@ class Chip8:
                                      byteorder='big')
 
         (first_digit, _, _, _) = get_opcode_digits(self.opcode)
-        if first_digit == 8:
-            command_set = self.op_table[first_digit]
-            command_set.execute(self.opcode)
-        else:
-            self.op_table[first_digit]()
+        opcode_set = self.op_table[first_digit]
+        opcode_set.execute(self.opcode)
         self.timers.tick()
 
     def load_game(self, program_file):
         game_data = program_file.read()
         self.memory.load(game_data)
-
-    def handle_0xxx_opcode(self):
-        """
-        00E0: Clears the screen
-        00EE: Returns from a subroutine
-        """
-        if self.opcode & 0x000F == 0:
-            self.graphics.clear()
-        else:
-            self.program_counter.jump(self.stack.pop())
-        self.program_counter.next()
-
-    def handle_1xxx_opcode(self):
-        """
-        1NNN: Jump to address NNN
-        """
-        self.program_counter.jump(self.opcode & 0x0FFF)
-
-    def handle_2xxx_opcode(self):
-        """
-        2NNN: Call subroutine as NNN
-        """
-        self.stack.append(self.program_counter.value)
-        self.program_counter.jump(self.opcode & 0x0FFF)
-
-    def handle_3xxx_opcode(self):
-        """
-        3XNN: Skips next instruction if VX == NN
-        """
-        (_, reg, _, _) = get_opcode_digits(self.opcode)
-        value = self.opcode & 0x00FF
-        if self.registers.v[reg] == value:
-            self.program_counter.skip()
-        else:
-            self.program_counter.next()
-
-    def handle_4xxx_opcode(self):
-        """
-        4XNN: Skips next instruction if VX != NN
-        """
-        (_, reg, _, _) = get_opcode_digits(self.opcode)
-        value = self.opcode & 0x00FF
-        if self.registers.v[reg] != value:
-            self.program_counter.skip()
-        else:
-            self.program_counter.next()
-
-    def handle_5xxx_opcode(self):
-        """
-        5XY0: Skips next instruction if VX == VY
-        """
-        (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
-
-        if self.registers.v[x_reg] == self.registers.v[y_reg]:
-            self.program_counter.skip()
-        else:
-            self.program_counter.next()
-
-    def handle_6xxx_opcode(self):
-        """
-        6XNN: Sets VX to NN
-        """
-        (_, reg, _, _) = get_opcode_digits(self.opcode)
-        value = self.opcode & 0x00FF
-        self.registers.v[reg] = value
-        self.program_counter.next()
-
-    def handle_7xxx_opcode(self):
-        """
-        7XNN: Adds NN to VX
-        """
-        (_, reg, _, _) = get_opcode_digits(self.opcode)
-        value = self.opcode & 0x00FF
-        self.registers.v[reg] = (self.registers.v[reg] + value) % 256
-        self.program_counter.next()
-
-    def handle_9xxx_opcode(self):
-        """
-        9XY0: Skips next instruction if VX != VY
-        """
-        (_, x_reg, y_reg, _) = get_opcode_digits(self.opcode)
-
-        if self.registers.v[x_reg] != self.registers.v[y_reg]:
-            self.program_counter.skip()
-        else:
-            self.program_counter.next()
-
-    def handle_axxx_opcode(self):
-        """
-        ANNN: Sets the index register to NNN
-        """
-        self.i = self.opcode & 0x0FFF
-        self.program_counter.next()
-
-    def handle_bxxx_opcode(self):
-        """
-        BNNN: Jumps to the address NNN + V0
-        """
-        offset = self.opcode & 0x0FFF
-        self.program_counter.value = self.registers.v[0] + offset
-
-    def handle_cxxx_opcode(self):
-        """
-        CXNN: Sets VX to the bitwise and NNN and a random number
-        """
-        (_, reg, _, _) = get_opcode_digits(self.opcode)
-        val = self.opcode & 0x00FF
-
-        self.registers.v[reg] = val & random.randint(0, 255)
-        self.program_counter.next()
-
-    def handle_dxxx_opcode(self):
-        """
-        DXYN: Draws sprites on the screen
-
-        Draws a sprite of size 8xN at the coordinates read from the
-        VX and VY registers
-        """
-        (_, x_coord, y_coord, height) = get_opcode_digits(self.opcode)
-
-        self.registers.v[15] = 0
-
-        for line_num in range(height):
-            sprite_line = self.memory.get_byte(self.registers.i + line_num)
-            collision = self.graphics.set_sprite_line(x_coord,
-                                                      y_coord + line_num,
-                                                      sprite_line)
-            if collision:
-                self.registers.v[15] = 1
-        self.program_counter.next()
-
-    def handle_exxx_opcode(self):
-        """
-        EX9E: Skips next instruction if the key stored in VX is pressed
-        EXA1: Skips next instruction if the key stored in VX is not pressed
-        """
-        opcode_end = (self.opcode & 0x00FF)
-        (_, reg, _, _) = get_opcode_digits(self.opcode)
-        key_num = self.registers.v[reg]
-        is_pressed = self.keys.is_pressed(key_num)
-
-        if ((opcode_end == 0x9E and is_pressed)
-                or (opcode_end == 0xA1 and not is_pressed)):
-            self.program_counter.skip()
-        else:
-            self.program_counter.next()
