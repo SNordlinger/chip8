@@ -1,13 +1,7 @@
 from dataclasses import dataclass
 from memory import Memory
 from util import get_opcode_digits
-from opcodes.opcode_sets_0_2 import OpcodeSet0xxx, OpcodeSet1xxx, OpcodeSet2xxx
-from opcodes.opcode_sets_3_5 import OpcodeSet3xxx, OpcodeSet4xxx, OpcodeSet5xxx
-from opcodes.opcode_sets_6_7 import OpcodeSet6xxx, OpcodeSet7xxx
-from opcodes.opcode_set_8xxx import OpcodeSet8xxx
-from opcodes.opcode_sets_9_b import OpcodeSet9xxx, OpcodeSetAxxx, OpcodeSetBxxx
-from opcodes.opcode_sets_c_e import OpcodeSetCxxx, OpcodeSetDxxx, OpcodeSetExxx
-from opcodes.opcode_set_fxxx import OpcodeSetFxxx
+import opcodes
 
 
 @dataclass
@@ -117,22 +111,22 @@ class Chip8:
         self.memory = Memory()
 
         self.op_table = [None] * 16
-        self.register(0, OpcodeSet0xxx)
-        self.register(1, OpcodeSet1xxx)
-        self.register(2, OpcodeSet2xxx)
-        self.register(3, OpcodeSet3xxx)
-        self.register(4, OpcodeSet4xxx)
-        self.register(5, OpcodeSet5xxx)
-        self.register(6, OpcodeSet6xxx)
-        self.register(7, OpcodeSet7xxx)
-        self.register(8, OpcodeSet8xxx)
-        self.register(9, OpcodeSet9xxx)
-        self.register(0xA, OpcodeSetAxxx)
-        self.register(0xB, OpcodeSetBxxx)
-        self.register(0xC, OpcodeSetCxxx)
-        self.register(0xD, OpcodeSetDxxx)
-        self.register(0xE, OpcodeSetExxx)
-        self.register(0xF, OpcodeSetFxxx)
+        self.register(0, opcodes.OpcodeSet0xxx)
+        self.register(1, opcodes.OpcodeSet1xxx)
+        self.register(2, opcodes.OpcodeSet2xxx)
+        self.register(3, opcodes.OpcodeSet3xxx)
+        self.register(4, opcodes.OpcodeSet4xxx)
+        self.register(5, opcodes.OpcodeSet5xxx)
+        self.register(6, opcodes.OpcodeSet6xxx)
+        self.register(7, opcodes.OpcodeSet7xxx)
+        self.register(8, opcodes.OpcodeSet8xxx)
+        self.register(9, opcodes.OpcodeSet9xxx)
+        self.register(0xA, opcodes.OpcodeSetAxxx)
+        self.register(0xB, opcodes.OpcodeSetBxxx)
+        self.register(0xC, opcodes.OpcodeSetCxxx)
+        self.register(0xD, opcodes.OpcodeSetDxxx)
+        self.register(0xE, opcodes.OpcodeSetExxx)
+        self.register(0xF, opcodes.OpcodeSetFxxx)
 
     def register(self, first_digit, Command):
         command_set = Command(registers=self.registers,
