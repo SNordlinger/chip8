@@ -7,6 +7,7 @@ from opcodes.opcode_sets_6_7 import OpcodeSet6xxx, OpcodeSet7xxx
 from opcodes.opcode_set_8xxx import OpcodeSet8xxx
 from opcodes.opcode_sets_9_b import OpcodeSet9xxx, OpcodeSetAxxx, OpcodeSetBxxx
 from opcodes.opcode_sets_c_e import OpcodeSetCxxx, OpcodeSetDxxx, OpcodeSetExxx
+from opcodes.opcode_set_fxxx import OpcodeSetFxxx
 
 
 @dataclass
@@ -131,6 +132,7 @@ class Chip8:
         self.register(0xC, OpcodeSetCxxx)
         self.register(0xD, OpcodeSetDxxx)
         self.register(0xE, OpcodeSetExxx)
+        self.register(0xF, OpcodeSetFxxx)
 
     def register(self, first_digit, Command):
         command_set = Command(registers=self.registers,

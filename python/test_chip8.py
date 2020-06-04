@@ -378,3 +378,14 @@ class TestOpcodeEXXX:
         chip.emulate_cycle()
 
         assert chip.program_counter.value == orig_pc + 4
+
+
+class TestOpcodeFxxx:
+    def test_set_delay_timer(self):
+        chip = Chip8()
+        program = BytesIO(b'\xF2\x07')
+        chip.registers.v[2] = 5
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.timers.delay_timer == 4
