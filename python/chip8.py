@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from memory import Memory
+from graphics import Graphics
 from util import get_opcode_digits
 import opcodes
 
@@ -37,35 +38,6 @@ class Timers:
             if self.sound_timer == 1:
                 print('BEEP\n')
             self.sound_timer -= 1
-
-
-class Graphics:
-    def __init__(self):
-        self.memory = [0] * 64 * 32
-
-    def set_sprite_line(self, x, y, sprite_data):
-        gfx_loc = Graphics.__get_memory_loc(x, y)
-        collision = False
-        for i in range(8):
-            new_pixel_set = sprite_data & (0x80 >> i) != 0
-            old_pixel_set = self.memory[gfx_loc + i] == 1
-            if new_pixel_set:
-                if old_pixel_set:
-                    collision = True
-                    self.memory[gfx_loc + i] = 0
-                else:
-                    self.memory[gfx_loc + i] = 1
-        return collision
-
-    def get_gfx_state(self, x, y, length):
-        gfx_loc = Graphics.__get_memory_loc(x, y)
-        return self.memory[gfx_loc:gfx_loc + length]
-
-    def clear(self):
-        self.memory = [0] * 64 * 32
-
-    def __get_memory_loc(x, y):
-        return x + (y * 64)
 
 
 class ProgramCounter:
@@ -139,9 +111,8 @@ class Chip8:
         self.op_table[first_digit] = command_set
 
     def emulate_cycle(self):
-        opcode = int.from_bytes(self.memory.get(
-            self.program_counter.value, 2),
-                                     byteorder='big')
+        opcode = int.from_bytes(self.memory.get(self.program_counter.value, 2),
+                                byteorder='big')
 
         (first_digit, _, _, _) = get_opcode_digits(opcode)
         opcode_set = self.op_table[first_digit]
