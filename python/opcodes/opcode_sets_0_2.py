@@ -8,9 +8,9 @@ class OpcodeSet0xxx(OpcodeSet):
     """
     def execute(self, opcode):
         if opcode & 0x000F == 0:
-            self.clear_screen_00e0
+            self.clear_screen_00e0()
         else:
-            self.subroutine_return_00ee
+            self.subroutine_return_00ee()
 
     def clear_screen_00e0(self):
         self.graphics.clear()

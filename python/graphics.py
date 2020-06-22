@@ -21,7 +21,11 @@ class Graphics:
         return [1 if p.is_on else 0 for p in pixels]
 
     def clear(self):
-        self.memory = [0] * 64 * 32
+        for pixel in self.memory:
+            pixel.clear()
+
+    def pixels(self):
+        return self.memory
 
     def pixel_at(self, x, y):
         loc = Graphics.__get_memory_loc(x, y)

@@ -5,6 +5,29 @@ from io import BytesIO
 from chip8 import Chip8
 
 
+class TestOpcode0XXX:
+    def test_clear_screen(self):
+        chip = Chip8()
+        test_pixel = chip.graphics.pixel_at(5, 6)
+        test_pixel.set()
+
+        program = BytesIO(b'\x00\xE0')
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert(not test_pixel.is_on)
+
+    def test_return(self):
+        chip = Chip8()
+        stack_pc = 100
+        chip.stack.append(stack_pc)
+        program = BytesIO(b'\x00\xEE')
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.program_counter.value == stack_pc + 2
+
+
 class TestOpcode1XXX:
     def test_set_program_counter(self):
         chip = Chip8()
