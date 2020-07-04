@@ -24,6 +24,9 @@ class Keypad:
     def is_pressed(self, key_num):
         return self.__key_state[key_num]
 
+    def pressed_keys(self):
+        return [i for i, pressed in enumerate(self.__key_state) if pressed]
+
 
 class Timers:
     def __init__(self):

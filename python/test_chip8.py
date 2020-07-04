@@ -414,3 +414,21 @@ class TestOpcodeFxxx:
 
         assert chip.timers.delay_timer == 4
         assert chip.program_counter.value == orig_pc + 2
+
+    def test_get_key(self):
+        chip = Chip8()
+        program = BytesIO(b'\xF3\x0A')
+        chip.registers.v[3] = 9
+        orig_pc = chip.program_counter.value
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        # With no key pressed operation should "block"
+        assert chip.program_counter.value == orig_pc
+        assert chip.registers.v[3] == 9
+
+        chip.keys.press_key(13)
+        chip.emulate_cycle()
+
+        assert chip.registers.v[3] == 13
+        assert chip.program_counter.value == orig_pc + 2
