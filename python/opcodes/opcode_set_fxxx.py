@@ -18,3 +18,4 @@ class OpcodeSetFxxx(OpcodeSet):
     def set_delay_timer_fx07(self, x_reg):
         new_timer_value = self.registers.v[x_reg]
         self.timers.delay_timer = new_timer_value
+        self.program_counter.next()

@@ -408,7 +408,9 @@ class TestOpcodeFxxx:
         chip = Chip8()
         program = BytesIO(b'\xF2\x07')
         chip.registers.v[2] = 5
+        orig_pc = chip.program_counter.value
         chip.load_game(program)
         chip.emulate_cycle()
 
         assert chip.timers.delay_timer == 4
+        assert chip.program_counter.value == orig_pc + 2
