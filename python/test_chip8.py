@@ -404,6 +404,16 @@ class TestOpcodeEXXX:
 
 
 class TestOpcodeFxxx:
+    def test_get_delay_timer(self):
+        chip = Chip8()
+        program = BytesIO(b'\xF6\x07')
+        chip.timers.delay_timer = 7
+        orig_pc = chip.program_counter.value
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.registers.v[6] == 7
+        assert chip.program_counter.value == orig_pc + 2
 
     def test_get_key(self):
         chip = Chip8()
