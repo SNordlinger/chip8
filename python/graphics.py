@@ -36,10 +36,10 @@ class Graphics:
 
 
 class Pixel:
-    def __init__(self, x, y):
+    def __init__(self, x, y, is_on=False):
         self.x = x
         self.y = y
-        self.is_on = False
+        self.is_on = is_on
 
     def set(self):
         is_flipped = self.is_on
