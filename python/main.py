@@ -4,7 +4,6 @@ import sdl2
 import sdl2.ext
 from chip8 import Chip8
 from screen import Screen
-from graphics import Pixel
 
 SCALING = 20
 
