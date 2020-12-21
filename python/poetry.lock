@@ -1,19 +1,18 @@
 [[package]]
-category = "dev"
-description = "Atomic file writes."
-marker = "sys_platform == \"win32\""
 name = "atomicwrites"
+version = "1.3.0"
+description = "Atomic file writes."
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "1.3.0"
 
 [[package]]
-category = "dev"
-description = "Classes Without Boilerplate"
 name = "attrs"
+version = "19.3.0"
+description = "Classes Without Boilerplate"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "19.3.0"
 
 [package.extras]
 azure-pipelines = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface", "pytest-azurepipelines"]
@@ -22,89 +21,88 @@ docs = ["sphinx", "zope.interface"]
 tests = ["coverage", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "zope.interface"]
 
 [[package]]
-category = "dev"
-description = "Cross-platform colored terminal text."
-marker = "sys_platform == \"win32\""
 name = "colorama"
+version = "0.4.3"
+description = "Cross-platform colored terminal text."
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "0.4.3"
 
 [[package]]
-category = "dev"
-description = "More routines for operating on iterables, beyond itertools"
 name = "more-itertools"
+version = "8.2.0"
+description = "More routines for operating on iterables, beyond itertools"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
-version = "8.2.0"
 
 [[package]]
-category = "dev"
-description = "Core utilities for Python packages"
 name = "packaging"
+version = "20.3"
+description = "Core utilities for Python packages"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "20.3"
 
 [package.dependencies]
 pyparsing = ">=2.0.2"
 six = "*"
 
 [[package]]
-category = "dev"
-description = "plugin and hook calling mechanisms for python"
 name = "pluggy"
+version = "0.13.1"
+description = "plugin and hook calling mechanisms for python"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "0.13.1"
 
 [package.extras]
 dev = ["pre-commit", "tox"]
 
 [[package]]
-category = "dev"
-description = "library with cross-python path, ini-parsing, io, code, log facilities"
 name = "py"
+version = "1.8.1"
+description = "library with cross-python path, ini-parsing, io, code, log facilities"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-version = "1.8.1"
 
 [[package]]
-category = "dev"
-description = "Python parsing module"
 name = "pyparsing"
+version = "2.4.7"
+description = "Python parsing module"
+category = "dev"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-version = "2.4.7"
 
 [[package]]
-category = "main"
-description = "Python SDL2 bindings"
 name = "pysdl2"
-optional = false
-python-versions = "*"
 version = "0.9.7"
-
-[[package]]
+description = "Python SDL2 bindings"
 category = "main"
-description = "Pre-built SDL2 binaries for PySDL2"
-name = "pysdl2-dll"
 optional = false
 python-versions = "*"
-version = "2.0.12"
 
 [[package]]
-category = "dev"
-description = "pytest: simple powerful testing with Python"
+name = "pysdl2-dll"
+version = "2.0.12"
+description = "Pre-built SDL2 binaries for PySDL2"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pytest"
+version = "5.4.1"
+description = "pytest: simple powerful testing with Python"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
-version = "5.4.1"
 
 [package.dependencies]
-atomicwrites = ">=1.0"
+atomicwrites = {version = ">=1.0", markers = "sys_platform == \"win32\""}
 attrs = ">=17.4.0"
-colorama = "*"
+colorama = {version = "*", markers = "sys_platform == \"win32\""}
 more-itertools = ">=4.0.0"
 packaging = "*"
 pluggy = ">=0.12,<1.0"
@@ -116,24 +114,33 @@ checkqa-mypy = ["mypy (v0.761)"]
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
-category = "dev"
-description = "Python 2 and 3 compatibility utilities"
 name = "six"
+version = "1.14.0"
+description = "Python 2 and 3 compatibility utilities"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
-version = "1.14.0"
 
 [[package]]
-category = "dev"
-description = "Measures number of Terminal column cells of wide-character codes"
 name = "wcwidth"
+version = "0.1.9"
+description = "Measures number of Terminal column cells of wide-character codes"
+category = "dev"
 optional = false
 python-versions = "*"
-version = "0.1.9"
+
+[[package]]
+name = "yapf"
+version = "0.30.0"
+description = "A formatter for Python code."
+category = "dev"
+optional = false
+python-versions = "*"
 
 [metadata]
-content-hash = "951a9f180d350c00b2d6013b38115cebbf8ecae0d3374101d346adf4c2cd49c3"
+lock-version = "1.1"
 python-versions = "^3.8"
+content-hash = "ea054c4e9ccdb8cdf646a6eb552fa8f976d45cb131814234ccc424fad0415f87"
 
 [metadata.files]
 atomicwrites = [
@@ -189,4 +196,8 @@ six = [
 wcwidth = [
     {file = "wcwidth-0.1.9-py2.py3-none-any.whl", hash = "sha256:cafe2186b3c009a04067022ce1dcd79cb38d8d65ee4f4791b8888d6599d1bbe1"},
     {file = "wcwidth-0.1.9.tar.gz", hash = "sha256:ee73862862a156bf77ff92b09034fc4825dd3af9cf81bc5b360668d425f3c5f1"},
+]
+yapf = [
+    {file = "yapf-0.30.0-py2.py3-none-any.whl", hash = "sha256:3abf61ba67cf603069710d30acbc88cfe565d907e16ad81429ae90ce9651e0c9"},
+    {file = "yapf-0.30.0.tar.gz", hash = "sha256:3000abee4c28daebad55da6c85f3cd07b8062ce48e2e9943c8da1b9667d48427"},
 ]

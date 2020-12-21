@@ -12,6 +12,7 @@ pysdl2-dll = "^2.0.12"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"
+yapf = "^0.30.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
