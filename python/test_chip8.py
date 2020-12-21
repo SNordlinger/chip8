@@ -454,3 +454,15 @@ class TestOpcodeFxxx:
 
         assert chip.timers.sound_timer == 4
         assert chip.program_counter.value == orig_pc + 2
+
+    def test_add_to_address_register(self):
+        chip = Chip8()
+        program = BytesIO(b'\xF3\x1E')
+        chip.registers.v[3] = 16
+        chip.registers.i = 250
+        orig_pc = chip.program_counter.value
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.registers.i == 10
+        assert chip.program_counter.value == orig_pc + 2
