@@ -86,32 +86,25 @@ class Chip8:
         self.memory = Memory()
 
         self.op_table = [None] * 16
-        self.register(0, opcodes.OpcodeSet0xxx)
-        self.register(1, opcodes.OpcodeSet1xxx)
-        self.register(2, opcodes.OpcodeSet2xxx)
-        self.register(3, opcodes.OpcodeSet3xxx)
-        self.register(4, opcodes.OpcodeSet4xxx)
-        self.register(5, opcodes.OpcodeSet5xxx)
-        self.register(6, opcodes.OpcodeSet6xxx)
-        self.register(7, opcodes.OpcodeSet7xxx)
-        self.register(8, opcodes.OpcodeSet8xxx)
-        self.register(9, opcodes.OpcodeSet9xxx)
-        self.register(0xA, opcodes.OpcodeSetAxxx)
-        self.register(0xB, opcodes.OpcodeSetBxxx)
-        self.register(0xC, opcodes.OpcodeSetCxxx)
-        self.register(0xD, opcodes.OpcodeSetDxxx)
-        self.register(0xE, opcodes.OpcodeSetExxx)
-        self.register(0xF, opcodes.OpcodeSetFxxx)
+        self.register_opcodes()
 
-    def register(self, first_digit, Command):
-        command_set = Command(registers=self.registers,
-                              timers=self.timers,
-                              keypad=self.keys,
-                              graphics=self.graphics,
-                              program_counter=self.program_counter,
-                              stack=self.stack,
-                              memory=self.memory)
-        self.op_table[first_digit] = command_set
+    def register_opcodes(self):
+        self.op_table[0] = opcodes.OpcodeSet0xxx(self)
+        self.op_table[1] = opcodes.OpcodeSet1xxx(self)
+        self.op_table[2] = opcodes.OpcodeSet2xxx(self)
+        self.op_table[3] = opcodes.OpcodeSet3xxx(self)
+        self.op_table[4] = opcodes.OpcodeSet4xxx(self)
+        self.op_table[5] = opcodes.OpcodeSet5xxx(self)
+        self.op_table[6] = opcodes.OpcodeSet6xxx(self)
+        self.op_table[7] = opcodes.OpcodeSet7xxx(self)
+        self.op_table[8] = opcodes.OpcodeSet8xxx(self)
+        self.op_table[9] = opcodes.OpcodeSet9xxx(self)
+        self.op_table[0xA] = opcodes.OpcodeSetAxxx(self)
+        self.op_table[0xB] = opcodes.OpcodeSetBxxx(self)
+        self.op_table[0xC] = opcodes.OpcodeSetCxxx(self)
+        self.op_table[0xD] = opcodes.OpcodeSetDxxx(self)
+        self.op_table[0xE] = opcodes.OpcodeSetExxx(self)
+        self.op_table[0xF] = opcodes.OpcodeSetFxxx(self)
 
     def emulate_cycle(self):
         opcode = int.from_bytes(self.memory.get(self.program_counter.value, 2),
