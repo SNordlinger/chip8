@@ -15,7 +15,7 @@ class TestOpcode0XXX:
         chip.load_game(program)
         chip.emulate_cycle()
 
-        assert(not test_pixel.is_on)
+        assert (not test_pixel.is_on)
 
     def test_return(self):
         chip = Chip8()
@@ -442,4 +442,15 @@ class TestOpcodeFxxx:
         chip.emulate_cycle()
 
         assert chip.timers.delay_timer == 4
+        assert chip.program_counter.value == orig_pc + 2
+
+    def test_set_sound_timer(self):
+        chip = Chip8()
+        program = BytesIO(b'\xF2\x18')
+        chip.registers.v[2] = 5
+        orig_pc = chip.program_counter.value
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.timers.sound_timer == 4
         assert chip.program_counter.value == orig_pc + 2

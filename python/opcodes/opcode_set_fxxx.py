@@ -8,7 +8,8 @@ class OpcodeSetFxxx(OpcodeSet):
         self.operation_table = {
             0x07: self.get_delay_timer_fx07,
             0x0A: self.get_key_fx0a,
-            0x15: self.set_delay_timer_fx15
+            0x15: self.set_delay_timer_fx15,
+            0x18: self.set_sound_timer_fx18
         }
 
     def execute(self, opcode):
@@ -32,4 +33,9 @@ class OpcodeSetFxxx(OpcodeSet):
     def set_delay_timer_fx15(self, x_reg):
         new_timer_value = self.registers.v[x_reg]
         self.timers.delay_timer = new_timer_value
+        self.program_counter.next()
+
+    def set_sound_timer_fx18(self, x_reg):
+        new_timer_value = self.registers.v[x_reg]
+        self.timers.sound_timer = new_timer_value
         self.program_counter.next()
