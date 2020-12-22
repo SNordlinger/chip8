@@ -466,3 +466,14 @@ class TestOpcodeFxxx:
 
         assert chip.registers.i == 10
         assert chip.program_counter.value == orig_pc + 2
+
+    def test_move_to_char_address(self):
+        chip = Chip8()
+        program = BytesIO(b'\xF4\x29')
+        chip.registers.v[4] = 0xA
+        orig_pc = chip.program_counter.value
+        chip.load_game(program)
+        chip.emulate_cycle()
+
+        assert chip.registers.i == 50
+        assert chip.program_counter.value == orig_pc + 2

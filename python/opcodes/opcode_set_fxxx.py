@@ -10,7 +10,8 @@ class OpcodeSetFxxx(OpcodeSet):
             0x0A: self.get_key_fx0a,
             0x15: self.set_delay_timer_fx15,
             0x18: self.set_sound_timer_fx18,
-            0x1e: self.add_to_address_register_fx1e
+            0x1e: self.add_to_address_register_fx1e,
+            0x29: self.move_to_char_address_fx29
         }
 
     def execute(self, opcode):
@@ -44,4 +45,9 @@ class OpcodeSetFxxx(OpcodeSet):
     def add_to_address_register_fx1e(self, x_reg):
         add_value = self.registers.v[x_reg]
         self.registers.i = (self.registers.i + add_value) % 256
+        self.program_counter.next()
+
+    def move_to_char_address_fx29(self, x_reg):
+        char = self.registers.v[x_reg]
+        self.registers.i = self.memory.char_address(char)
         self.program_counter.next()

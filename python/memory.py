@@ -37,3 +37,6 @@ class Memory:
 
     def get_byte(self, loc):
         return self.data[loc]
+
+    def char_address(self, char):
+        return char * 5
